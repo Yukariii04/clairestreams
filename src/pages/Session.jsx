@@ -48,10 +48,12 @@ export default function Session() {
 
     async function initViewer() {
       try {
+        // ponytail: subscribe to signaling FIRST, then announce presence
+        // otherwise host sends offer before viewer is listening
+        await createPeer(sessionId, setStream);
         await joinSession(sessionId);
         if (!active) return;
         setStatus('WAITING');
-        await createPeer(sessionId, setStream);
       } catch (err) {
         setError(err.message);
       }

@@ -57,6 +57,7 @@ export async function createPeer(sessionId, onTrack, localStream) {
     peer.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => console.error('ICEError', e));
   };
 
+  // ponytail: subscribe to signaling BEFORE announcing presence
   subscribeSignaling(sessionId, role, { onOffer, onAnswer, onIceCandidate });
   
   if (role === 'host') {
