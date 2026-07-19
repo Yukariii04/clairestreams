@@ -38,15 +38,20 @@ ClaireStreams is a lightweight, purely peer-to-peer screen broadcasting web appl
    npm install
    ```
 
-3. **Set up Firebase Environment Variables:**
-   Create a `.env` file in the root directory based on your Firebase project settings:
+3. **Set up Environment Variables:**
+   Create a `.env` file in the root directory based on the `.env.example` file:
    ```env
-   VITE_FIREBASE_API_KEY=your_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-   VITE_FIREBASE_PROJECT_ID=your_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-   VITE_FIREBASE_APP_ID=your_app_id
+   VITE_APP_NAME="ClaireStreams"
+   VITE_APP_VERSION="1.0.0"
+
+   # Firebase Realtime Database Config (Required)
+   VITE_FIREBASE_API_KEY="your_api_key"
+   VITE_FIREBASE_DATABASE_URL="your_database_url"
+   VITE_FIREBASE_PROJECT_ID="your_project_id"
+
+   # Metered TURN Server Config (Required)
+   VITE_METERED_API_KEY="your_metered_api_key"
+   VITE_METERED_APP_NAME="your_metered_app_name"
    ```
 
 4. **Start the development server:**
