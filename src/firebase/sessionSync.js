@@ -1,4 +1,4 @@
-import { ref, onValue, set, update, remove, get } from 'firebase/database';
+import { ref, onValue, set, update, remove, get, onDisconnect } from 'firebase/database';
 import { getDb } from './app.js';
 
 export function subscribeSession(sessionId, callback) {
@@ -33,4 +33,16 @@ export async function getSessionOnce(sessionId) {
   const sessionRef = ref(db, `sessions/${sessionId}`);
   const snapshot = await get(sessionRef);
   return snapshot.val();
+}
+
+export function setViewerDisconnectHook(sessionId) {
+  const db = getDb();
+  const sessionRef = ref(db, `sessions/${sessionId}`);
+  return onDisconnect(sessionRef).update({ viewerConnected: false, status: 'WAITING' });
+}
+
+export function cancelViewerDisconnectHook(sessionId) {
+  const db = getDb();
+  const sessionRef = ref(db, `sessions/${sessionId}`);
+  return onDisconnect(sessionRef).cancel();
 }

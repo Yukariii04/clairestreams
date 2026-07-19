@@ -90,6 +90,11 @@ export default function Session() {
     if (isHost) {
       stopCapture();
       endSession(sessionId);
+    } else {
+      import('../firebase/index.js').then(({ updateSession, cancelViewerDisconnectHook }) => {
+        updateSession(sessionId, { viewerConnected: false, status: 'WAITING' });
+        if (cancelViewerDisconnectHook) cancelViewerDisconnectHook(sessionId);
+      });
     }
     disconnect();
     navigate('/');
