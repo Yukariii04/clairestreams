@@ -114,7 +114,7 @@ export default function Session() {
         
         <div className="flex-1 relative flex flex-col p-6 z-10">
           {stream ? (
-            <VideoPlayer stream={stream} />
+            <VideoPlayer stream={stream} muted={isHost} />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center flex-col">
               <div className="w-12 h-12 border-4 border-med-ocean dark:border-blue-400 border-t-transparent rounded-full animate-spin mb-6"></div>
