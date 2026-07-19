@@ -25,7 +25,7 @@ export default function Session() {
 
   const captureStarted = useRef(false);
   const capturePromise = useRef(null);
-  const prevViewer = useRef(false);
+  const prevViewer = useRef(null); // ponytail: null = first load, skip notification
 
   useEffect(() => {
     let active = true;
@@ -92,10 +92,17 @@ export default function Session() {
 
   useEffect(() => {
     if (!isHost || !sessionData) return;
-    if (sessionData.viewerConnected !== prevViewer.current) {
-      setNotification(sessionData.viewerConnected ? 'Guest connected' : 'Guest left');
+    const vc = !!sessionData.viewerConnected;
+    if (prevViewer.current === null) {
+      // ponytail: first load, just record state, don't notify
+      prevViewer.current = vc;
+      return;
+    }
+    if (vc !== prevViewer.current) {
+      prevViewer.current = vc;
+      setNotification(vc ? 'Guest connected' : 'Guest left');
+      if (!vc) setRtcStatus('WAITING'); // ponytail: reset so badge doesn't stick on FAILED
       const t = setTimeout(() => setNotification(''), 3000);
-      prevViewer.current = sessionData.viewerConnected;
       return () => clearTimeout(t);
     }
   }, [sessionData?.viewerConnected, isHost]);
@@ -127,7 +134,7 @@ export default function Session() {
       <BackgroundEffects />
       {/* ponytail: lazy minimal overlay for notifications instead of a heavy toast library */}
       {notification && <div className="absolute top-20 left-1/2 -translate-x-1/2 px-4 py-2 bg-med-navy dark:bg-slate-800 text-white rounded-full z-50 shadow-md transition-opacity animate-fade-in">{notification}</div>}
-      <Navbar isHost={isHost} rtcStatus={(!sessionData?.viewerConnected && isHost) ? 'WAITING' : rtcStatus} onEnd={handleEnd} sessionId={sessionId} />
+      <Navbar isHost={isHost} rtcStatus={rtcStatus} onEnd={handleEnd} sessionId={sessionId} />
       <div className="flex flex-1 overflow-hidden relative z-10">
         <div className="absolute inset-0 bg-med-sky/30 dark:bg-slate-900/50 pointer-events-none transition-colors duration-700"></div>
         <div className="absolute inset-0 opacity-[0.03] dark:invert dark:opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(currentColor 2px, transparent 2px)', backgroundSize: '30px 30px' }}></div>
