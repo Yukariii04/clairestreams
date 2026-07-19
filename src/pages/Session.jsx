@@ -36,8 +36,7 @@ export default function Session() {
         if (!active) return;
         setStream(st);
         captureStarted.current = true;
-        await createPeer(sessionId);
-        attachStream(st);
+        await createPeer(sessionId, null, st);
         setStatus('WAITING');
       } catch (err) {
         setError('Capture failed: ' + err.message);

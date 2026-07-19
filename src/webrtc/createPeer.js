@@ -1,7 +1,7 @@
 import { state, states } from './connectionState.js';
 import { fetchTurnServers, subscribeSignaling, writeOffer, writeAnswer, pushIceCandidate, subscribeSession } from '../firebase/index.js';
 
-export async function createPeer(sessionId, onTrack) {
+export async function createPeer(sessionId, onTrack, localStream) {
   if (state.peer) state.peer.close();
   
   const role = onTrack ? 'viewer' : 'host';
@@ -15,6 +15,11 @@ export async function createPeer(sessionId, onTrack) {
   const peer = new RTCPeerConnection({ iceServers });
   
   state.peer = peer;
+  if (localStream) {
+    localStream.getTracks().forEach(track => {
+      peer.addTrack(track, localStream);
+    });
+  }
   state.status = states.CONNECTING;
   
   peer.onicecandidate = e => {
