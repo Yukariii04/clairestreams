@@ -20,9 +20,12 @@ export default function Session() {
   const [rtcStatus, setRtcStatus] = useState('IDLE');
   const [stream, setStream] = useState(null);
   const [error, setError] = useState(null);
+  const [sessionData, setSessionData] = useState(null);
+  const [notification, setNotification] = useState('');
 
   const captureStarted = useRef(false);
   const capturePromise = useRef(null);
+  const prevViewer = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -60,6 +63,7 @@ export default function Session() {
     import('../firebase/index.js').then(({ subscribeSession }) => {
       const unsub = subscribeSession(sessionId, (s) => {
         if (s) {
+          setSessionData(s);
           setStatus(s.status);
           if (s.status === 'ENDED') setError('Session Ended by Host');
           
@@ -86,6 +90,16 @@ export default function Session() {
     };
   }, [sessionId, isHost]);
 
+  useEffect(() => {
+    if (!isHost || !sessionData) return;
+    if (sessionData.viewerConnected !== prevViewer.current) {
+      setNotification(sessionData.viewerConnected ? 'Guest connected' : 'Guest left');
+      const t = setTimeout(() => setNotification(''), 3000);
+      prevViewer.current = sessionData.viewerConnected;
+      return () => clearTimeout(t);
+    }
+  }, [sessionData?.viewerConnected, isHost]);
+
   const handleEnd = () => {
     if (isHost) {
       stopCapture();
@@ -111,7 +125,9 @@ export default function Session() {
   return (
     <div className="flex flex-col h-screen bg-[#fdf4db] dark:bg-slate-950 font-sans text-med-navy dark:text-slate-100 overflow-hidden transition-colors duration-700 relative">
       <BackgroundEffects />
-      <Navbar isHost={isHost} rtcStatus={rtcStatus} onEnd={handleEnd} sessionId={sessionId} />
+      {/* ponytail: lazy minimal overlay for notifications instead of a heavy toast library */}
+      {notification && <div className="absolute top-20 left-1/2 -translate-x-1/2 px-4 py-2 bg-med-navy dark:bg-slate-800 text-white rounded-full z-50 shadow-md transition-opacity animate-fade-in">{notification}</div>}
+      <Navbar isHost={isHost} rtcStatus={(!sessionData?.viewerConnected && isHost) ? 'WAITING' : rtcStatus} onEnd={handleEnd} sessionId={sessionId} />
       <div className="flex flex-1 overflow-hidden relative z-10">
         <div className="absolute inset-0 bg-med-sky/30 dark:bg-slate-900/50 pointer-events-none transition-colors duration-700"></div>
         <div className="absolute inset-0 opacity-[0.03] dark:invert dark:opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(currentColor 2px, transparent 2px)', backgroundSize: '30px 30px' }}></div>
