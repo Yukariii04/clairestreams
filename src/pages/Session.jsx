@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { joinSession, endSession } from '../session/index.js';
 import { startCapture, stopCapture, isCapturing } from '../capture/index.js';
 import { createPeer, attachStream, disconnect, getConnectionState } from '../webrtc/index.js';
-
+import { subscribeSession, updateSession, cancelViewerDisconnectHook } from '../firebase/index.js';
 import { Navbar } from '../components/Navbar.jsx';
 import { VideoPlayer } from '../components/VideoPlayer.jsx';
 import { Chat } from '../components/Chat.jsx';
@@ -62,23 +62,21 @@ export default function Session() {
     if (isHost) initHost();
     else initViewer();
 
-    import('../firebase/index.js').then(({ subscribeSession }) => {
-      const unsub = subscribeSession(sessionId, (s) => {
-        if (s) {
-          setSessionData(s);
-          setStatus(s.status);
-          if (s.status === 'ENDED') setError('Session Ended by Host');
-          
-          if (isHost && captureStarted.current && !isCapturing() && s.status !== 'ENDED') {
-             handleEnd();
-          }
-        } else {
-          setError('Invalid Session');
+    const unsub = subscribeSession(sessionId, (s) => {
+      if (s) {
+        setSessionData(s);
+        setStatus(s.status);
+        if (s.status === 'ENDED') setError('Session Ended by Host');
+        
+        if (isHost && captureStarted.current && !isCapturing() && s.status !== 'ENDED') {
+           handleEnd();
         }
-      });
-      if (!active) unsub();
-      else window.claireUnsub = unsub;
+      } else {
+        setError('Invalid Session');
+      }
     });
+    if (!active) unsub();
+    else window.claireUnsub = unsub;
 
     const int = setInterval(() => {
       setRtcStatus(getConnectionState());
@@ -114,10 +112,8 @@ export default function Session() {
       stopCapture();
       endSession(sessionId);
     } else {
-      import('../firebase/index.js').then(({ updateSession, cancelViewerDisconnectHook }) => {
-        updateSession(sessionId, { viewerConnected: false, status: 'WAITING' });
-        if (cancelViewerDisconnectHook) cancelViewerDisconnectHook(sessionId);
-      });
+      updateSession(sessionId, { viewerConnected: false, status: 'WAITING' });
+      if (cancelViewerDisconnectHook) cancelViewerDisconnectHook(sessionId);
     }
     disconnect();
     navigate('/');
