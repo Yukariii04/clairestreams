@@ -1,5 +1,5 @@
 import { state, states } from './connectionState.js';
-import { fetchTurnServers, subscribeSignaling, writeOffer, writeAnswer, pushIceCandidate, subscribeSession } from '../firebase/index.js';
+import { fetchTurnServers, subscribeSignaling, writeOffer, writeAnswer, pushIceCandidate, subscribeSession, clearSignaling } from '../firebase/index.js';
 
 export async function createPeer(sessionId, onTrack, localStream) {
   if (state.peer) state.peer.close();
@@ -63,13 +63,18 @@ export async function createPeer(sessionId, onTrack, localStream) {
   if (role === 'host') {
     let offerCreated = false;
     subscribeSession(sessionId, async (sessionVal) => {
-      if (sessionVal && sessionVal.viewerConnected && !offerCreated) {
-        offerCreated = true;
-        try {
-          const offer = await peer.createOffer();
-          await peer.setLocalDescription(offer);
-          await writeOffer(sessionId, offer);
-        } catch (e) { console.error('NegotiationError', e); }
+      if (sessionVal && sessionVal.viewerConnected) {
+        if (!offerCreated) {
+          offerCreated = true;
+          try {
+            const offer = await peer.createOffer({ iceRestart: true });
+            await peer.setLocalDescription(offer);
+            await writeOffer(sessionId, offer);
+          } catch (e) { console.error('NegotiationError', e); }
+        }
+      } else if (sessionVal && !sessionVal.viewerConnected) {
+        offerCreated = false;
+        clearSignaling(sessionId).catch(e => console.error('ClearSignalingErr', e));
       }
     });
   }

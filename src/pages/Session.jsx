@@ -22,6 +22,18 @@ export default function Session() {
   const [error, setError] = useState(null);
   const [sessionData, setSessionData] = useState(null);
   const [notification, setNotification] = useState('');
+  
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [videoEnabled, setVideoEnabled] = useState(true);
+
+  const toggleMedia = (kind) => {
+    const track = kind === 'audio' ? stream?.getAudioTracks()[0] : stream?.getVideoTracks()[0];
+    if (track) {
+      track.enabled = !track.enabled;
+      if (kind === 'audio') setAudioEnabled(track.enabled);
+      else setVideoEnabled(track.enabled);
+    }
+  };
 
   const captureStarted = useRef(false);
   const capturePromise = useRef(null);
@@ -132,14 +144,23 @@ export default function Session() {
       <BackgroundEffects />
       {/* ponytail: lazy minimal overlay for notifications instead of a heavy toast library */}
       {notification && <div className="absolute top-20 left-1/2 -translate-x-1/2 px-4 py-2 bg-med-navy dark:bg-slate-800 text-white rounded-full z-50 shadow-md transition-opacity animate-fade-in">{notification}</div>}
-      <Navbar isHost={isHost} rtcStatus={rtcStatus} onEnd={handleEnd} sessionId={sessionId} />
+      <Navbar 
+        isHost={isHost} 
+        rtcStatus={rtcStatus} 
+        onEnd={handleEnd} 
+        sessionId={sessionId} 
+        viewerConnected={!!sessionData?.viewerConnected}
+        audioEnabled={audioEnabled}
+        videoEnabled={videoEnabled}
+        onToggleMedia={toggleMedia}
+      />
       <div className="flex flex-1 overflow-hidden relative z-10">
         <div className="absolute inset-0 bg-med-sky/30 dark:bg-slate-900/50 pointer-events-none transition-colors duration-700"></div>
         <div className="absolute inset-0 opacity-[0.03] dark:invert dark:opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(currentColor 2px, transparent 2px)', backgroundSize: '30px 30px' }}></div>
         
         <div className="flex-1 relative flex flex-col p-6 z-10">
           {stream ? (
-            <VideoPlayer stream={stream} muted={isHost} />
+            <VideoPlayer stream={stream} muted={isHost} isHost={isHost} />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center flex-col">
               <div className="w-12 h-12 border-4 border-med-ocean dark:border-blue-400 border-t-transparent rounded-full animate-spin mb-6"></div>

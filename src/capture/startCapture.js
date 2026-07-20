@@ -14,7 +14,11 @@ export async function startCapture() {
   try {
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
-      audio: true
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+      }
     });
     
     state.stream = stream;

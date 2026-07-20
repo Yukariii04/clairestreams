@@ -46,3 +46,8 @@ export async function pushIceCandidate(sessionId, role, candidate) {
   const newCandidateRef = push(candidatesRef);
   await set(newCandidateRef, JSON.parse(JSON.stringify(candidate)));
 }
+
+export async function clearSignaling(sessionId) {
+  const db = getDb();
+  await set(ref(db, `sessions/${sessionId}/signaling`), null);
+}
