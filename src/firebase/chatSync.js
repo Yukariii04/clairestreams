@@ -8,20 +8,24 @@ export function subscribeChat(sessionId, role, onMessageReceived) {
   const unsubscribe = onChildAdded(chatRef, (snapshot) => {
     const message = snapshot.val();
     if (message && message.sender !== role) {
-      onMessageReceived(message);
+      onMessageReceived({ id: snapshot.key, ...message });
     }
   });
   
   return unsubscribe;
 }
 
-export async function pushChatMessage(sessionId, sender, text) {
+export async function pushChatMessage(sessionId, sender, text, replyTo = null) {
   const db = getDb();
   const chatRef = ref(db, `sessions/${sessionId}/chat`);
   const newMessageRef = push(chatRef);
-  await set(newMessageRef, {
+  const data = {
     sender,
     text,
     ts: Date.now()
-  });
+  };
+  if (replyTo) {
+    data.replyTo = replyTo;
+  }
+  await set(newMessageRef, data);
 }

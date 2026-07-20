@@ -6,6 +6,7 @@ import { subscribeChat, pushChatMessage } from '../firebase/index.js';
 
 export function Chat({ sessionId, isHost }) {
   const [messages, setMessages] = useState([]);
+  const [replyingTo, setReplyingTo] = useState(null);
   const scrollRef = useRef();
 
   const role = isHost ? 'host' : 'viewer';
@@ -13,7 +14,7 @@ export function Chat({ sessionId, isHost }) {
 
   useEffect(() => {
     const unsub = subscribeChat(sessionId, role, (message) => {
-      setMessages(prev => [...prev, { sender: message.sender === 'host' ? 'Host' : 'Guest', text: message.text, self: false }]);
+      setMessages(prev => [...prev, { ...message, sender: message.sender === 'host' ? 'Host' : 'Guest', self: false }]);
     });
     return () => unsub();
   }, [sessionId, role]);
@@ -23,8 +24,11 @@ export function Chat({ sessionId, isHost }) {
   }, [messages]);
 
   async function sendMessage(text) {
-    setMessages(prev => [...prev, { sender: roleDisplayName, text, self: true }]); 
-    await pushChatMessage(sessionId, role, text);
+    const tempId = Date.now().toString();
+    setMessages(prev => [...prev, { id: tempId, sender: roleDisplayName, text, self: true, replyTo: replyingTo }]); 
+    const currentReply = replyingTo;
+    setReplyingTo(null);
+    await pushChatMessage(sessionId, role, text, currentReply);
   }
 
   return (
@@ -39,10 +43,10 @@ export function Chat({ sessionId, isHost }) {
             <p className="font-hand text-2xl text-med-ocean/60 dark:text-blue-300/50 -rotate-2">Jot down your thoughts here...</p>
           </div>
         ) : (
-          messages.map((m, i) => <ChatMessage key={i} msg={m} isSelf={m.self} />)
+          messages.map((m, i) => <ChatMessage key={m.id || i} msg={m} isSelf={m.self} onReply={() => setReplyingTo(m)} />)
         )}
       </div>
-      <ChatInput onSend={sendMessage} />
+      <ChatInput onSend={sendMessage} replyingTo={replyingTo} onCancelReply={() => setReplyingTo(null)} />
     </div>
   );
 }
