@@ -86,6 +86,8 @@ export default function Session() {
       } else {
         setError('Invalid Session');
       }
+    }, (err) => {
+      setError('Connection lost or permission denied: ' + err.message);
     });
     if (!active) unsub();
     else window.claireUnsub = unsub;

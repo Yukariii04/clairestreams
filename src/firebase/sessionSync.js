@@ -1,11 +1,14 @@
 import { ref, onValue, set, update, remove, get, onDisconnect } from 'firebase/database';
 import { getDb } from './app.js';
 
-export function subscribeSession(sessionId, callback) {
+export function subscribeSession(sessionId, callback, errorCallback) {
   const db = getDb();
   const sessionRef = ref(db, `sessions/${sessionId}`);
   const unsubscribe = onValue(sessionRef, (snapshot) => {
     callback(snapshot.val());
+  }, (error) => {
+    if (errorCallback) errorCallback(error);
+    else console.error("Session subscription error:", error);
   });
   return unsubscribe;
 }
@@ -42,6 +45,18 @@ export function setViewerDisconnectHook(sessionId) {
 }
 
 export function cancelViewerDisconnectHook(sessionId) {
+  const db = getDb();
+  const sessionRef = ref(db, `sessions/${sessionId}`);
+  return onDisconnect(sessionRef).cancel();
+}
+
+export function setHostDisconnectHook(sessionId) {
+  const db = getDb();
+  const sessionRef = ref(db, `sessions/${sessionId}`);
+  return onDisconnect(sessionRef).remove();
+}
+
+export function cancelHostDisconnectHook(sessionId) {
   const db = getDb();
   const sessionRef = ref(db, `sessions/${sessionId}`);
   return onDisconnect(sessionRef).cancel();

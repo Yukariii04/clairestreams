@@ -54,12 +54,32 @@ ClaireStreams is a lightweight, purely peer-to-peer screen broadcasting web appl
    VITE_METERED_APP_NAME="your_metered_app_name"
    ```
 
-4. **Start the development server:**
+4. **Firebase Configuration & Security:**
+   ClaireStreams uses Firebase Realtime Database for signaling and session management. To secure the database seamlessly without requiring users to log in, it uses **Firebase Anonymous Authentication**.
+
+   **Required Providers:**
+   - In your Firebase Console, navigate to **Authentication** > **Sign-in method** and enable **Anonymous** authentication.
+
+   **Database Rules:**
+   - Navigate to **Realtime Database** > **Rules** and apply the following secure rules (also found in `database.rules.json`):
+   ```json
+   {
+     "rules": {
+       "sessions": {
+         ".read": "auth != null",
+         ".write": "auth != null"
+       }
+     }
+   }
+   ```
+   *Why Anonymous Auth?* It allows the application to automatically securely authenticate in the background upon launch. This prevents unauthorized public access to the database while maintaining a seamless, login-free experience for hosts and guests.
+
+5. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser:**
+6. **Open your browser:**
    Navigate to `http://localhost:5173` to start broadcasting!
 
 ## 📦 Production Build & Deployment

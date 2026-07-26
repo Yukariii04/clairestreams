@@ -1,6 +1,6 @@
 import { states } from './sessionState.js';
 import { generateUUID } from '../utils/index.js';
-import { writeSession } from '../firebase/index.js';
+import { writeSession, setHostDisconnectHook } from '../firebase/index.js';
 
 export async function createSession() {
   const sessionId = generateUUID().split('-')[0].toUpperCase();
@@ -13,5 +13,6 @@ export async function createSession() {
     status: states.WAITING
   };
   await writeSession(sessionId, session);
+  setHostDisconnectHook(sessionId);
   return session;
 }
