@@ -14,6 +14,7 @@ ClaireStreams is a lightweight, purely peer-to-peer screen broadcasting web appl
 - **Beautiful UI:** A handcrafted, glassmorphic Mediterranean aesthetic featuring warm sand, sky blue, and pastel lemon colors.
 - **Seamless Dark Mode:** Instantly toggle between a bright Mediterranean day and a glowing midnight ocean theme.
 - **Session Notes:** Integrated sidebar for hosts and guests to jot down thoughts during the broadcast.
+- **Long-Lived Sessions:** Continuous broadcasting for up to 24 hours per session without interruption.
 - **Zero Configuration:** Start a broadcast with one click and share the invite link instantly.
 
 ## 🚀 Tech Stack

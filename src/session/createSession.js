@@ -9,7 +9,7 @@ export async function createSession() {
     hostConnected: true,
     viewerConnected: false,
     createdAt: Date.now(),
-    expiresAt: Date.now() + 30 * 60 * 1000,
+    expiresAt: Date.now() + 24 * 60 * 60 * 1000,
     status: states.WAITING
   };
   await writeSession(sessionId, session);
